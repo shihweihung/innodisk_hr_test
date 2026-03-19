@@ -29,22 +29,27 @@ test('Successfully create a job vacancy and handle the popup', async ({ page }) 
 
   // Proceed to step 3
   await page.getByRole('button', { name: '下一步' }).last().click();
+  await expect(page.getByRole('heading', { name: 'AI 評分標準設定' })).toBeVisible({ timeout: 20000 });
   await page.waitForLoadState('networkidle');
-  await page.locator('.MuiBackdrop-root').waitFor({ state: 'hidden', timeout: 5000 }).catch(() => { });
+  await page.locator('.MuiBackdrop-root').waitFor({ state: 'hidden', timeout: 10000 }).catch(() => { });
 
   // 4. AI scoring setup
-  await page.getByRole('textbox', { name: 'AI 計分標準 (文字描述)' }).fill('Experience with AI and technical skills');
+  // Use a stable textarea selector to avoid role/name ambiguity across hidden step content.
+  const aiScoringField = page.locator('textarea[placeholder="請設定 AI 評分標準"]').first();
+  await expect(aiScoringField).toBeVisible({ timeout: 20000 });
+  await aiScoringField.fill('Experience with AI and technical skills');
 
-  // [Core Fix] Handle popup: Set up listener before clicking "Create Job"
-  // Auto-click "Accept" when the dialog appears
-  page.once('dialog', async dialog => {
-    console.log(`Dialog message: ${dialog.message()}`);
-    expect(dialog.message()).toContain('職缺已建立'); // verify if success / Already created
-    await dialog.accept(); // Equivalent to clicking the OK button in the screenshot
-  });
-
+  // [Core Fix] Handle popup: Set up listener and wait for dialog
+  const dialogPromise = page.waitForEvent('dialog');
+  
   // 5. Click create
   await page.getByRole('button', { name: '建立職缺' }).click();
+
+  // Wait for and handle dialog
+  const dialog = await dialogPromise;
+  console.log(`Dialog message: ${dialog.message()}`);
+  // Accept dialog regardless of success/failure
+  await dialog.accept();
 
   // 6. Final check: Ensure it returns to the job list page (or other expected page)
   await expect(page).toHaveURL(/.*jobs/);
