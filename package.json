@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "playwright test",
+    "build": "echo \"No build step configured for this Playwright test project\""
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

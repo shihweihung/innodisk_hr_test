@@ -23,7 +23,7 @@ test('Successfully create a job vacancy and handle the popup', async ({ page }) 
   const jobDescField = page.getByRole('textbox', { name: '工作內容描述' });
   await jobDescField.waitFor({ state: 'visible', timeout: 15000 });
   await page.waitForFunction(() => {
-    const field = document.querySelector('textarea[placeholder*="請描述詳細"]');
+    const field = document.querySelector('textarea[placeholder*="請描述詳細"]') as HTMLTextAreaElement | null;
     return field && field.value && field.value.length > 100;
   }, { timeout: 15000 }).catch(() => { });
 
